@@ -41,6 +41,29 @@ python -m pip install --user ".[secure]"
 
 ---
 
+## Uninstall
+
+To completely remove Watchman, all background daemons, startup entries, and local databases:
+
+### One-liner:
+```powershell
+irm https://raw.githubusercontent.com/thelegendavanish/watchman/main/uninstall.ps1 | iex
+```
+
+### Or manually via PowerShell:
+```powershell
+# 1. Uninstall the CLI package
+python -m pip uninstall -y watchman
+
+# 2. Remove configuration and database directories
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Watchman" -ErrorAction SilentlyContinue
+
+# 3. Remove any startup entries
+Remove-Item -Force "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Watchman-*.cmd" -ErrorAction SilentlyContinue
+```
+
+---
+
 ## Quick start
 
 ```powershell
