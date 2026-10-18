@@ -23,7 +23,7 @@ and optionally delivers real-time Telegram alerts.
 Open **PowerShell** and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/YOUR_USERNAME/watchman/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/thelegendavanish/watchman/main/install.ps1 | iex
 ```
 
 > **Before running any `irm | iex` command**, review the script at the URL above.
@@ -172,7 +172,7 @@ It opens a visible console window — no hidden persistence.
 2. Edit [`install.ps1`](install.ps1): replace `YOUR_USERNAME` with your GitHub username.
 3. Users can then install with:
    ```powershell
-   irm https://raw.githubusercontent.com/YOUR_USERNAME/watchman/main/install.ps1 | iex
+   irm https://raw.githubusercontent.com/thelegendavanish/watchman/main/install.ps1 | iex
    ```
 4. To release versioned builds, use **GitHub Releases** and update `$GITHUB_BRANCH`
    in `install.ps1` to a tag (e.g. `v0.2.0`).
