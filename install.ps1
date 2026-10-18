@@ -4,7 +4,7 @@
 #
 #  USAGE (run in PowerShell as your normal user account):
 #
-#    irm https://raw.githubusercontent.com/YOUR_USERNAME/watchman/main/install.ps1 | iex
+#    irm https://raw.githubusercontent.com/thelegendavanish/watchman/main/install.ps1 | iex
 #
 #  WHAT THIS SCRIPT DOES:
 #    1. Checks for Python 3.10+
