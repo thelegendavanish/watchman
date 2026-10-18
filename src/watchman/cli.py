@@ -154,7 +154,7 @@ def cmd_status(args) -> int:
 
 def cmd_logs(args) -> int:
     folder, _ = load_config(args.name)
-    db = sqlite3.connect(folder / "events.sqlite3")
+    db = db_connect(folder)
     rows = db.execute(
         "SELECT id,timestamp,event_type,path,destination_path,sha256 "
         "FROM events ORDER BY id DESC LIMIT ?",
@@ -216,7 +216,7 @@ def cmd_export(args) -> int:
     import io
 
     folder, _ = load_config(args.name)
-    db = sqlite3.connect(folder / "events.sqlite3")
+    db = db_connect(folder)
     rows = db.execute(
         "SELECT id,timestamp,event_type,path,destination_path,sha256,details,prev_event_hash "
         "FROM events ORDER BY id"

@@ -133,15 +133,23 @@ def db_connect(folder: Path) -> sqlite3.Connection:
     """Open (or create) the deployment SQLite database, applying schema migrations."""
     db = sqlite3.connect(
         folder / "events.sqlite3",
-        timeout=10,
+        timeout=30.0,
         check_same_thread=False,
     )
+    try:
+        db.execute("PRAGMA journal_mode=WAL")
+        db.execute("PRAGMA busy_timeout=10000")
+    except Exception:
+        pass
+
     db.executescript(_SCHEMA)
     try:
-        db.execute("ALTER TABLE events ADD COLUMN prev_event_hash TEXT")
-        db.commit()
+        cols = {row[1] for row in db.execute("PRAGMA table_info(events)").fetchall()}
+        if "prev_event_hash" not in cols:
+            db.execute("ALTER TABLE events ADD COLUMN prev_event_hash TEXT")
+            db.commit()
     except sqlite3.OperationalError:
-        pass  # column already present
+        pass  # table or column state handled
     return db
 
 
@@ -173,33 +181,43 @@ def baseline_scan(folder: Path, config: dict) -> int:
     """Hash every file under protected_paths and store in the baselines table."""
     paths = config.get("protected_paths", [])
     scanned_at = utc_now()
-    count = 0
-    with db_connect(folder) as db:
-        db.execute("DELETE FROM baselines")
-        db.commit()
-        for raw in paths:
-            p = Path(raw).expanduser().resolve()
-            if not p.exists():
-                print(f"[WARN] Skipping unavailable path: {p}")
+
+    # Pre-compute all hashes in memory without holding any database lock
+    records: list[tuple[str, str, str]] = []
+    for raw in paths:
+        p = Path(raw).expanduser().resolve()
+        if not p.exists():
+            print(f"[WARN] Skipping unavailable path: {p}")
+            continue
+        for f in p.rglob("*"):
+            if not f.is_file():
                 continue
-            for f in p.rglob("*"):
-                if not f.is_file():
-                    continue
-                digest = sha256_file(str(f))
-                if digest:
-                    db.execute(
-                        "INSERT INTO baselines(scanned, path, sha256) VALUES (?,?,?)",
-                        (scanned_at, str(f), digest),
-                    )
-                    count += 1
+            digest = sha256_file(str(f))
+            if digest:
+                records.append((scanned_at, str(f), digest))
+
+    # Fast atomic batch insert into database
+    db = db_connect(folder)
+    try:
+        db.execute("DELETE FROM baselines")
+        db.executemany(
+            "INSERT INTO baselines(scanned, path, sha256) VALUES (?,?,?)",
+            records,
+        )
         db.commit()
-    return count
+    finally:
+        db.close()
+
+    return len(records)
 
 
 def verify_baseline(folder: Path, config: dict) -> list[dict]:
     """Compare the live filesystem against the stored baseline."""
-    with db_connect(folder) as db:
+    db = db_connect(folder)
+    try:
         rows = db.execute("SELECT path, sha256 FROM baselines").fetchall()
+    finally:
+        db.close()
 
     if not rows:
         return []
