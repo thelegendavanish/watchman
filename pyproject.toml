@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchman"
+version = "0.2.0"
+description = "Locally installed, user-controlled Windows file integrity monitor"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["watchdog>=4.0.0", "requests>=2.31.0"]
+
+[project.optional-dependencies]
+secure = ["keyring>=24.0.0"]
+dev    = ["pytest>=8.0", "pytest-mock>=3.14"]
+
+[project.scripts]
+watchman = "watchman.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
