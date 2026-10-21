@@ -11,7 +11,7 @@ and optionally delivers real-time Telegram alerts.
 ## Requirements
 
 - Windows 10/11
-- Python 3.10 or newer (`python.org/downloads` → enable "Add Python to PATH")
+- Python 3.10 or newer (automatically installed if missing, or manual download from `python.org/downloads`)
 - Network access only if you enable Telegram notifications
 
 ---
